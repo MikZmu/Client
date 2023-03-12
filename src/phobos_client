@@ -1,0 +1,10 @@
+import socket
+
+host = socket.gethostbyname(socket.gethostname())
+port = 2137
+
+socket  = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+socket.connect((host, port))
+
+socket.send("Hello world !".encode('utf-8'))
+print(socket.recv(4096))
