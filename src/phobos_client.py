@@ -17,5 +17,3 @@ def phobos_listen():
                 else:
                         print(incoming)
                 #communication_socket.close())
-
-phobos_listen()
