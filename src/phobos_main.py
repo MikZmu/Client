@@ -1,4 +1,4 @@
-import phobos_client
+import threading
+import phobos_server
+phobos_server.init()
 
-
-phobos_client.phobos_listen()

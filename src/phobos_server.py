@@ -1,21 +1,87 @@
 # https://youtu.be/YwWfKitB8aA
 import socket
+import threading
+import os
+import time
+import subprocess
 
-host = socket.gethostbyname(socket.gethostname())  #24:50 dla VB
-port = 2137
 
-server = socket.socket(socket.AF_INET, socket.SOCK_STREAM) #utworzenie obiektu socket z użyciem konstruktora socket (do użycia z internetem AF_INET, z protokołem TCP - sock_stream)
-server.bind((host, port))
+deimos = socket.socket(socket.AF_INET, socket.SOCK_STREAM) #utworzenie obiektu socket z użyciem konstruktora socket (do użycia z internetem AF_INET, z protokołem TCP - sock_stream)
+host = socket.gethostbyname(socket.gethostname())
+port = 9999
 
-server.listen(10)
 
-while True:
-    communication_socket, address = server.accept()  
-    #server.accept zwraca adres nadchodzącego połączenia i inny socket którego możemy użyć do połączenia - 
-    #dla każdego połączenia tworzymy nowy socket do komunikacji z klientem server socket jest tylko do akceptowania przychodzących połączeń
-    print(f"Connected with {address}" )
-    message = communication_socket.recv(4096).decode() #recv(rozmiar bufora w bitach)  wiadomość jest otrzymana w formacie bitowym -> musi zostać zdekodowana
-    print(f"Message is: {message}")
-    communication_socket.send("Gotcha... Anything else ?".encode('utf-8')) #utf-8 -> 8-bit Unicode Transformation Format
-    communication_socket.close()
-    print(f"Connection with {address} ended")
+
+def kill_process_using_port(port):
+    pid = subprocess.run(
+        ['lsof', '-t', f'-i:{port}'], text=True, capture_output=True
+    ).stdout.strip()
+    if pid:
+        if subprocess.run(['kill', '-TERM', pid]).returncode != 0:
+            subprocess.run(['kill', '-KILL', pid], check=True)
+        time.sleep(1)  # Give OS time to free up the PORT usage
+
+def conn():
+    try:
+        deimos.connect((host, port))
+        print('Connected')
+    except:
+        print('Reconnecting... ')
+        time.sleep(3)
+        conn()
+
+
+
+def init():
+    conn()
+    handle_thread = threading.Thread(target=handle)
+    sendMessage_thread = threading.Thread(target=sendMessage)
+    handle_thread.start()
+    sendMessage_thread.start()
+
+def handle():
+    while True:
+        try:
+            message = deimos.recv(1024).decode('ascii')
+            if(message != ""):
+                if str(message) == "quit":
+                    print('nowIrest')
+                    command("quit")
+                    deimos.close()
+                elif(str(message) == 1):
+                    #deimosChat()
+                    print("msg")
+                elif(str(message) == 2):
+                    print("file")
+                    #deimosFile()
+                elif(str(message) == 3):
+                    print("vid")
+                    #deimosVid()
+                else:
+                    print(message)
+            if(message == ""):
+                print('Awaiting orders ')
+        except:
+            print('Reconnecting...')
+            time.sleep(5)
+            conn()
+
+
+def sendMessage():
+    while True:
+        try:
+            msg = input()
+            deimos.send(msg.encode('ascii'))
+        except:
+            print("Broken pipe ?")
+
+def command(keyword):
+        msg = str(keyword)
+        deimos.send(msg.encode('ascii'))
+
+
+
+
+
+
+
