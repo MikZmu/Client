@@ -7,7 +7,7 @@ import subprocess
 
 
 deimos = socket.socket(socket.AF_INET, socket.SOCK_STREAM) #utworzenie obiektu socket z użyciem konstruktora socket (do użycia z internetem AF_INET, z protokołem TCP - sock_stream)
-host = socket.gethostbyname(socket.gethostname())
+host = socket.gethostbyname(socket.gethostname()) # on client side we are interested not in client ip but in server ip, if connection is not going through lan we are interested in public IP -> myip.is
 port = 9999
 
 
