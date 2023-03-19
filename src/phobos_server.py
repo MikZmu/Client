@@ -7,6 +7,7 @@ import subprocess
 
 
 deimos = socket.socket(socket.AF_INET, socket.SOCK_STREAM) #utworzenie obiektu socket z użyciem konstruktora socket (do użycia z internetem AF_INET, z protokołem TCP - sock_stream)
+#host = '192.168.0.27'
 host = socket.gethostbyname(socket.gethostname())
 port = 9999
 
