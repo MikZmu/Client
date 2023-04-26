@@ -5,7 +5,9 @@ import os
 import time
 import subprocess
 import sys
-
+import cv2
+import base64
+import numpy as np
 
 global port
 port = 9999
@@ -30,7 +32,8 @@ def connectionDirection():
     global curState
     global host
     curState = 'connectionDirection'
-    chooser = input('Enter 1 to connect to self')
+    print('Enter 1 to connect to self')
+    chooser = input()
     if(chooser =='1'):
         host = socket.gethostbyname(socket.gethostname())
         conn()
@@ -52,10 +55,11 @@ def conn():
         #host = '192.168.0.27'
         deimos.connect((host, port))
         print('Connected')
-    except:
+    except Exception as e:
+        print (e)
         print('Reconnecting... ')
         time.sleep(5)
-        conn()
+        connectionDirection()
 
 def isLinux():
     global curState
@@ -74,7 +78,7 @@ def init():
     receive_thread = threading.Thread(target=receive)
     command_thread.start()
     receive_thread.start()
-    connectionDirection()
+    connectionDirection() 
     
 def communicationBreakdown():
     global curState
@@ -98,6 +102,8 @@ def handle(handled):
         elif(handled == 'browse'):
             #browse()
             print("waiting For Browse function")
+        elif(handled == 'film'):
+            rcvVid()
         else:
             print(handled)
 
@@ -115,7 +121,7 @@ def receive():
         try:
             message = deimos.recv(4096).decode('ascii')
             if(message != ''):
-                print(message)
+                handle(message)
             #if(message != ''):
             #    handle(message)
         except:
@@ -136,7 +142,53 @@ def command():
 
 
 
+def rcvVid():
+    vidPort = 9998
+    buffer = 65536
+    
 
+    """def connVid():
+        global deimosVid
+        try:
+            deimosVid = socket.socket(socket.AF_INET, socket.SOCK_STREAM) #utworzenie obiektu socket z użyciem konstruktora socket (do użycia z internetem AF_INET, z protokołem TCP - sock_stream)
+            deimos.connect((host, vidPort))
+            print('Connected Video')
+        except Exception as e:
+            print(e)
+            print('Reconnecting Video ')
+            time.sleep(5)
+            connVid()"""
+
+    def rcv():
+        cv2.namedWindow('RECEIVING VIDEO')        
+        cv2.moveWindow('RECEIVING VIDEO', 10,360) 
+        fps,st,frames_to_count,cnt = (0,0,2000,0)
+        while True:
+            packet,_ = deimos.recvfrom(buffer)
+            data = base64.b64decode(packet,' /')
+            npdata = np.fromstring(data,dtype=np.uint8)
+
+            frame = cv2.imdecode(npdata,1)
+            frame = cv2.putText(frame,'FPS: '+str(fps),(10,40),cv2.FONT_HERSHEY_SIMPLEX,0.7,(0,0,255),2)
+            cv2.imshow("RECEIVING VIDEO",frame)
+            key = cv2.waitKey(1) & 0xFF
+            
+            if key == ord('q'):
+                
+                os._exit(1)
+                break
+
+            if cnt == frames_to_count:
+                try:
+                    fps = round(frames_to_count/(time.time()-st),1)
+                    st=time.time()
+                    cnt=0
+                except:
+                    pass
+            cnt+=1
+
+    #connVid()
+    rcv()
 
 
 
