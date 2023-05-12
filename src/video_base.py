@@ -110,13 +110,21 @@ class VideoBase:
                 print("The Sqlite connection is closed")
 
 
-VideoBase.create_video_table()
-VideoBase.insertBLOB(1, "lobby", "2023-04-13 13:57:01", "E:\Pobrane\mrowka.mp4")
+
+
+
+
+
+
+
+
+
+#VideoBase.insertBLOB(1, "lobby", "2023-04-13 13:57:01", "E:\Pobrane\mrowka.mp4")
 #VideoBase.insertBLOB(2, "foyer", "2023-04-13 14:37:01", "E:\Pobrane\mrowka2.mp4")
 #VideoBase.insertBLOB(3, "atrium", "2023-04-12 12:37:01", "E:\Pobrane\mrowka3.mp4")
 
 
-VideoBase.readBlobData("lobby", "2023-04-13 13:57:01")
+#VideoBase.readBlobData("lobby", "2023-04-13 13:57:01")
 #VideoBase.readBlobData("foyer", "2023-04-13 14:37:01")
 #VideoBase.readBlobData("atrium")
-VideoBase.viewBlobData()
+#VideoBase.viewBlobData()
