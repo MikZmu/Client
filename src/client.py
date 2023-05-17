@@ -6,10 +6,7 @@ import cv2 as cv
 import base64
 import queue
 import numpy as np
-global q
-q = queue.Queue(maxsize=200)
-global buffer
-buffer = 999999999
+import connection
 global host
 
 global state
@@ -28,7 +25,7 @@ startTime = '1900-01-01 00:00:00'
 global endTime
 endTime = '3000-12-31 23:25:29'
 global location
-location = 'ANY'
+location = 'not null'
 
 def isLinux():
     print("IsLinux")
@@ -47,184 +44,89 @@ def clear():
         clear = lambda: os.system('cls')
         clear()
 
-
-
-
-
-
-def connectionDirection():
-    global host
-    while(True):
-        clear()
-        print('1 : connect to self')
-        print('2 : connect to other')
-        chooser = input()
-        if(chooser == '1'):
-           host = socket.gethostbyname(socket.gethostname())
-           return 1
-        if(chooser == '2'):
-            host = input("enter server ip: ")
-            return 2
-    
-
-
 def interface():
     global connState
-    global table
     isLinux()
     while(True):
-        #clear()
-        print("Connection: "+" :: "+ connState)
-        if(state == 'connection menu' and connState == 'disconnected'):
-            print('1 : connection setup')
-            print('2 : connect')
+        clear()
+        if(state == 'connection menu'):
+            print("CONNECTION :: SERVER :: " + connState + " :: VIDEO :: " + vidConn)
+            print('1 : Connection setup')
+            print("2 : browse")
+            print('3 : refresh')
             command = input()
             handle(command)
-        if(state == 'connection menu' and connState == 'connected'):
-            print('1 : connection setup')
-            print('2 : connect')
-            print("3 : browse")
-            command = input()
+        elif(state == 'browse'):
+            print('1 : connection setup **** 2 : connect **** 3 : menu **** 4 : show state')
+            print(f"Start Time: {startTime} **** End Time: {endTime}  **** Location: {location}")
+            print("StartTime to set start time **** EndTime to set end time **** Location to set location **** Play to play video")
+            result = connection.request(location, startTime, endTime)
+            for row in result:
+                print("ID: "+str(row[0])+" Location: "+ row[1]+ " Time: " + row[2])
+            command = input("Command: ")
             handle(command)
-        if(state == 'browse'):
-            print('1 : connection setup')
-            print('2 : connect')
-            print("3 : menu")
-            print(f"Start Time: {startTime} :: End Time: {endTime}  :: Location: {location}")
-            print("StartTime to set start time")
-            print("EndTime to set end time")
-            print("Location to set location")
-            print("enter ANY to search for any")
-            print("Play [id] to play video")
-            command = input()
-            handle(command)
-
 
 def handle(command):
+    global connState
+    global vidConn
     global state
     global startTime
     global endTime
     global location
-    if(state == 'connection menu' and connState == 'disconnected'):
+    global result
+    if(state == 'connection menu'):
         if(command=='1'):
-            connectionDirection()
-        if(command=='2'):
-            connectionToggle()
-    if(state == 'connection menu' and connState == 'connected'):
-        if(command=='1'):
-            connectionDirection()
-        if(command=='2'):
-            connectionToggle()
-        if(command=='3'):
+            connection.connectionDirection()
+        elif(command =='2' and connState == 'connected'):
             state = 'browse'
-    if(state == 'browse'):
-        if(command == '1'):
-            connectionDirection()
-        if(command =='2'):
-            connection()
-        if(command == '3'):
-            state == 'connection menu'
-        if(command == 'StartTime'):
-            startTime = input("YYYY-MM-DD HH:MM:SS : ")
-            request(location, startTime, endTime)
-        if(command == 'EndTime'):
-            endTime = input("YYYY-MM-DD HH:MM:SS : ")
-            request(location, startTime, endTime)
-        if(command == 'location'):
-            location = input("location: ")
-            request(location, startTime, endTime)
-        if(command =='play'):
-            id = input('ID: ')
-            rcvStr(id)
+        elif(command == '2' and connState == 'disconnected'):
+            print('Can\'t browse in offline mode !')
+        elif(command == '3'):
+            print("XOXO")
+    elif(state == 'browse'):
+        if(connState == 'connected'):
+            if(command == '1'):
+                connection.connectionDirection()
+            if(command =='2'):
+                connection.connection()
+            if(command == '3'):
+                state == 'connection menu'
+            if(command =='4'):
+                print("XOXO")
+            if(command == 'StartTime'):
+                print("YYYY-MM-DD HH:MM:SS : ")
+                startTime = input()
+                result = connection.request(location, startTime, endTime)
+            if(command == 'EndTime'):
+                endTime = input("YYYY-MM-DD HH:MM:SS : ")
+                result = connection.request(location, startTime, endTime)
+            if(command == 'location'):
+                location = input("location: ")
+                result = connection.request(location, startTime, endTime)
+            if(command =='play'):
+                id = input('ID: ')
+                connection.rcvStr(id)
+        if(connState == 'disconnected'):
+            state = 'connection menu'
+     
 
-def rcvStr(id):
-    global fps
-    server.send(f'play&{id}'.encode('ascii'))
-    fps = float(sock.recv(4096).decode('ascii'))
-    rcv_thd = threading.Thread(target=receive)
-    global play_thd
-    play_thd = threading.Thread(target=play)
-    rcv_thd.start()
-        
-def receive():
-        play_thd = threading.Thread(target=play)
-        play_thd.start()
-        while True:
-            if(True):
-                try:
-                    packet,_ = sock.recvfrom(buffer)
-                    data = base64.b64decode(packet,' /')
-                    npdata = np.frombuffer(data,dtype=np.uint8)
-
-                    frame = cv.imdecode(npdata,1)
-                    frame = cv.putText(frame,'FPS: '+str(fps),(10,40),cv.FONT_HERSHEY_SIMPLEX,0.7,(0,0,255),2)
-                    q.put(frame)
-
-                except Exception as e:
-                    print(e)
+    
 
 
-def play():
+def getState():
     while(True):
-        cv.namedWindow("receive")
-        cv.moveWindow('receive', 10, 360)
-        teller = q.empty()
-        print(q.qsize())
-        fpsInt = int(fps)
-        keyy = int((1/fpsInt) * 1000)
-        if(teller==False):         
-            cv.imshow("receive",q.get())
-            key = cv.waitKey(keyy)
-            if key & 0xFF== ord('q'):
-                    break
-
-    
-
-def request(location, startTime, endTime):
-    global table
-    server.send(f'request&{location}&{startTime}&{endTime}'.encode('ascii'))
-    arr = server.recv(4096)
-    table = pickle.loads(arr)
-    for row in table:
-        print ("Id = ", row[0], "Location = ", row[1], "Time= ", row[2])
-    
-    
+        global connState
+        connState = connection.getConnState()
+        global vidConn
+        vidConn = connection.getvidConn()
+        time.sleep(5)
 
 
-def connectionToggle():
-    global toggle
-    if(toggle == False):
-        toggle = True
-        #connThread.start()
-        connection(toggle, stream)
-    else:
-        toggle = False
-        connection(toggle, stream)
-
-def connection(toggle, stream):
-    global server
-    global sock
-    global connState
-    if(toggle == True):
-        try:
-            server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            server.connect((host, 9999))
-            print('Connected to server')
-            global sock
-            sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            sock.connect((host,9999))
-            print("connected to video")
-            connState = 'connected'
-        except Exception as e:
-            connState = 'disconnected'
-            print (e)
-            print('Reconnecting... ')
-            time.sleep(5)
-
-
-#def receive():
-
-
-
+isLinux()
+connection.isLinux()
+connThd = threading.Thread(target=connection.connection)
+connThd.start()
+stateThd = threading.Thread(target=getState)
+stateThd.start()
 interface()
 
