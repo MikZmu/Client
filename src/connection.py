@@ -89,7 +89,7 @@ def play():
         teller = q.empty()
         print(q.qsize())
         fpsInt = int(fps)
-        keyy = int((1/fpsInt) * 1000)
+        keyy = int((1/fpsInt) * 500)
         if(teller==False):         
             cv.imshow("receive",q.get())
             key = cv.waitKey(keyy)
