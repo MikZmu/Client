@@ -27,17 +27,15 @@ vidConn = 'disconnected'
 
 def connectionDirection():
     global host
-    while(True):
-        clear()
-        print('1 : connect to self')
-        print('2 : connect to other')
-        chooser = input()
-        if(chooser == '1'):
-           host = socket.gethostbyname(socket.gethostname())
-           return 1
-        if(chooser == '2'):
-            host = input("enter server ip: ")
-            return 2
+        #clear()
+    print('1 : connect to self')
+    print('2 : connect to other')
+    chooser = input()
+    if(chooser == '1'):
+        host = socket.gethostbyname(socket.gethostname())
+    if(chooser == '2'):
+        host = input("enter server ip: ")
+
         
 def clear():
     if(linuxMode == 1):
@@ -105,12 +103,16 @@ def connectionToggle():
 
 def request(location, startTime, endTime):
     global table
-    server.send(f'request&{location}&{startTime}&{endTime}'.encode('ascii'))
-    arr = server.recv(4096)
-    table = pickle.loads(arr)
-    return table
+    try:
+        server.send(f'request&{location}&{startTime}&{endTime}'.encode('ascii'))
+        arr = server.recv(4096)
+        table = pickle.loads(arr)
+        return table
+    except:
+        connState = 'disconnected'
 
 def connection():
+    time.sleep(0.1)
     global server
     global sock
     global connState

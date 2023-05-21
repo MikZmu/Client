@@ -61,8 +61,11 @@ def interface():
             print(f"Start Time: {startTime} **** End Time: {endTime}  **** Location: {location}")
             print("StartTime to set start time **** EndTime to set end time **** Location to set location **** Play to play video")
             result = connection.request(location, startTime, endTime)
-            for row in result:
-                print("ID: "+str(row[0])+" Location: "+ row[1]+ " Time: " + row[2])
+            try:
+                for row in result:
+                    print("ID: "+str(row[0])+" Location: "+ row[1]+ " Time: " + row[2])
+            except Exception as e:
+                print(f"There was a problem with displaying data. Exception {e}")
             command = input("Command: ")
             handle(command)
 
@@ -96,13 +99,10 @@ def handle(command):
             if(command == 'StartTime'):
                 print("YYYY-MM-DD HH:MM:SS : ")
                 startTime = input()
-                result = connection.request(location, startTime, endTime)
             if(command == 'EndTime'):
                 endTime = input("YYYY-MM-DD HH:MM:SS : ")
-                result = connection.request(location, startTime, endTime)
             if(command == 'location'):
                 location = input("location: ")
-                result = connection.request(location, startTime, endTime)
             if(command =='play'):
                 id = input('ID: ')
                 connection.rcvStr(id)
@@ -119,7 +119,7 @@ def getState():
         connState = connection.getConnState()
         global vidConn
         vidConn = connection.getvidConn()
-        time.sleep(5)
+        time.sleep(0.1)
 
 
 isLinux()
