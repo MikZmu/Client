@@ -25,7 +25,7 @@ startTime = '1900-01-01 00:00:00'
 global endTime
 endTime = '3000-12-31 23:25:29'
 global location
-location = 'not null'
+location = 'atrium'
 
 def isLinux():
     print("IsLinux")
@@ -109,10 +109,6 @@ def handle(command):
         if(connState == 'disconnected'):
             state = 'connection menu'
      
-
-    
-
-
 def getState():
     while(True):
         global connState
@@ -120,7 +116,6 @@ def getState():
         global vidConn
         vidConn = connection.getvidConn()
         time.sleep(0.1)
-
 
 isLinux()
 connection.isLinux()

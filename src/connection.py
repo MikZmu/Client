@@ -20,11 +20,6 @@ global vidConn
 connState = 'disconnected'
 vidConn = 'disconnected'
 
-
-
-
-
-
 def connectionDirection():
     global host
         #clear()
@@ -36,7 +31,6 @@ def connectionDirection():
     if(chooser == '2'):
         host = input("enter server ip: ")
 
-        
 def clear():
     if(linuxMode == 1):
         clear = lambda: os.system('clear')
@@ -57,51 +51,31 @@ def isLinux():
 def rcvStr(id):
     global fps
     server.send(f'play&{id}'.encode('ascii'))
-    fps = float(sock.recv(4096).decode('ascii'))
-    rcv_thd = threading.Thread(target=receive)
-    global play_thd
-    play_thd = threading.Thread(target=play)
-    rcv_thd.start()
+    receivendplay()
 
-def receive():
-        play_thd = threading.Thread(target=play)
-        play_thd.start()
-        while True:
-            if(True):
-                try:
-                    packet,_ = sock.recvfrom(buffer)
-                    data = base64.b64decode(packet,' /')
-                    npdata = np.frombuffer(data,dtype=np.uint8)
-
-                    frame = cv.imdecode(npdata,1)
-                    frame = cv.putText(frame,'FPS: '+str(fps),(10,40),cv.FONT_HERSHEY_SIMPLEX,0.7,(0,0,255),2)
-                    q.put(frame)
-
-                except Exception as e:
-                    print(e)
-
-def play():
+def receivendplay():
+    #fps = float(sock.recv(4096).decode('ascii'))
+    adress = socket.gethostbyname(socket.gethostname())
+    secondPart = server.recv(1024).decode('ascii')
+    capture =  cv.VideoCapture(f"http://{adress}:{secondPart}/stream.mjpg")
+    #fpsInt = int(fps)
+    #keyy = int((1/fpsInt) * 1000)
     while(True):
-        cv.namedWindow("receive")
-        cv.moveWindow('receive', 10, 360)
-        teller = q.empty()
-        print(q.qsize())
-        fpsInt = int(fps)
-        keyy = int((1/fpsInt) * 500)
-        if(teller==False):         
-            cv.imshow("receive",q.get())
-            key = cv.waitKey(keyy)
-            if key & 0xFF== ord('q'):
-                    break
-
-def connectionToggle():
-    global toggle
-    if(toggle == False):
-        toggle = True
-    else:
-        toggle = False
+        try:
+            _, frame = capture.read()
+            cv.imshow('stream', frame)
+            if cv.waitKey(1)==ord("q"):
+                server.send('stop'.encode('ascii'))
+                break 
+        except Exception as e:
+            print(str(e))
+            server.send('stop'.encode('ascii'))
+            break 
+    capture.release()
+    cv.destroyAllWindows()
 
 def request(location, startTime, endTime):
+    global connState
     global table
     try:
         server.send(f'request&{location}&{startTime}&{endTime}'.encode('ascii'))
@@ -112,14 +86,12 @@ def request(location, startTime, endTime):
         connState = 'disconnected'
 
 def connection():
-    time.sleep(0.1)
     global server
     global sock
     global connState
     global vidConn
     global alarmTab
     server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     while(True):
         try:
             if(connState != 'connected'):
@@ -129,15 +101,6 @@ def connection():
             connState = str(e)
             time.sleep(5)
             server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        try:
-            if(vidConn != 'connected'):
-                sock.connect((host,9999))
-                vidConn = 'connected'
-        except Exception as e:
-            vidConn = str(e)
-            time.sleep(5)
-            sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-
 
 def getConnState():
     try:
