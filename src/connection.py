@@ -49,17 +49,28 @@ def isLinux():
         linuxMode = 0
 
 def rcvStr(id):
+    global connState
     global fps
-    server.send(f'play&{id}'.encode('ascii'))
+    try:
+        server.send(f'play&{id}'.encode('ascii'))
+    except Exception as e:
+            connState = str(e)
     receivendplay()
 
 def receivendplay():
+
+
+    global connState
     #fps = float(sock.recv(4096).decode('ascii'))
-    adress = socket.gethostbyname(socket.gethostname())
-    secondPart = server.recv(1024).decode('ascii')
-    capture =  cv.VideoCapture(f"http://{adress}:{secondPart}/stream.mjpg")
+    try:
+        secondPart = server.recv(1024).decode('ascii')
+        capture =  cv.VideoCapture(f"http://{host}:{secondPart}/stream.mjpg")
+    except:
+        connState = 'disconnected'
     #fpsInt = int(fps)
     #keyy = int((1/fpsInt) * 1000)
+
+
     while(True):
         try:
             _, frame = capture.read()
@@ -69,10 +80,16 @@ def receivendplay():
                 break 
         except Exception as e:
             print(str(e))
-            server.send('stop'.encode('ascii'))
-            break 
-    capture.release()
-    cv.destroyAllWindows()
+            try:
+                server.send('stop'.encode('ascii'))
+            except:
+                connState = 'disconnected'
+            break
+    try:
+        capture.release()
+        cv.destroyAllWindows()
+    except Exception as e:
+        print(e)
 
 def request(location, startTime, endTime):
     global connState
@@ -113,3 +130,4 @@ def getvidConn():
         return vidConn
     except:
         return 'disconnected'
+    

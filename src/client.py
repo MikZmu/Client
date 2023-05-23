@@ -45,18 +45,15 @@ def clear():
         clear()
 
 def interface():
-    global connState
-    isLinux()
     while(True):
+        update.wait()
         clear()
         if(state == 'connection menu'):
-            print("CONNECTION :: SERVER :: " + connState + " :: VIDEO :: " + vidConn)
-            print('1 : Connection setup')
-            print("2 : browse")
-            print('3 : refresh')
-            command = input()
-            handle(command)
+            print("CONNECTION :::: " + connState)
+            print('1 : Connection setup :::::::::: 2 : browse')
+            print("Command: ")
         elif(state == 'browse'):
+            print("CONNECTION :: SERVER :: " + connState)
             print('1 : connection setup **** 2 : connect **** 3 : menu **** 4 : show state')
             print(f"Start Time: {startTime} **** End Time: {endTime}  **** Location: {location}")
             print("StartTime to set start time **** EndTime to set end time **** Location to set location **** Play to play video")
@@ -66,8 +63,8 @@ def interface():
                     print("ID: "+str(row[0])+" Location: "+ row[1]+ " Time: " + row[2])
             except Exception as e:
                 print(f"There was a problem with displaying data. Exception {e}")
-            command = input("Command: ")
-            handle(command)
+            print("Command: ")
+        update.clear()
 
 def handle(command):
     global connState
@@ -108,20 +105,37 @@ def handle(command):
                 connection.rcvStr(id)
         if(connState == 'disconnected'):
             state = 'connection menu'
+
+def command():
+    while(True):
+        command = input()
+        if(command != ""):
+            handle(command)
+            update.set()
+
+
+
+
+
      
 def getState():
+    global connState
     while(True):
-        global connState
-        connState = connection.getConnState()
-        global vidConn
-        vidConn = connection.getvidConn()
+        newConnState = connection.getConnState()
+        if(newConnState != connState):
+            connState = newConnState
+            update.set()
         time.sleep(0.1)
 
 isLinux()
+update = threading.Event()
+commThd = threading.Thread(target=command)
+dispThd = threading.Thread(target=interface)
+dispThd.start()
 connection.isLinux()
 connThd = threading.Thread(target=connection.connection)
 connThd.start()
 stateThd = threading.Thread(target=getState)
 stateThd.start()
-interface()
+commThd.start()
 
