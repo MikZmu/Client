@@ -6,7 +6,8 @@ import cv2 as cv
 import base64
 import queue
 import numpy as np
-import connection
+#import connection
+import makeItStop as connection
 global host
 
 global state
@@ -131,6 +132,8 @@ isLinux()
 update = threading.Event()
 commThd = threading.Thread(target=command)
 dispThd = threading.Thread(target=interface)
+checkThd = threading.Thread(target=connection.checkRecv)
+checkThd.start()
 dispThd.start()
 connection.isLinux()
 connThd = threading.Thread(target=connection.connection)
@@ -138,4 +141,3 @@ connThd.start()
 stateThd = threading.Thread(target=getState)
 stateThd.start()
 commThd.start()
-

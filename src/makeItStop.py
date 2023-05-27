@@ -19,6 +19,8 @@ global connState
 global vidConn
 connState = 'disconnected'
 vidConn = 'disconnected'
+global mode
+mode = 'check'
 
 def connectionDirection():
     global host
@@ -58,7 +60,8 @@ def rcvStr(id):
     receivendplay()
 
 def receivendplay():
-
+    global mode
+    mode = 'ppp'
 
     global connState
     #fps = float(sock.recv(4096).decode('ascii'))
@@ -91,16 +94,21 @@ def receivendplay():
         cv.destroyAllWindows()
     except Exception as e:
         print(e)
+    mode = 'check'
 
 def request(location, startTime, endTime):
+    global mode
+    mode = 'ppp'
     global connState
     global table
     try:
         server.send(f'request&{location}&{startTime}&{endTime}'.encode('ascii'))
         arr = server.recv(4096)
         table = pickle.loads(arr)
+        mode = 'check'
         return table
     except:
+        mode = 'check'
         connState = 'disconnected'
 
 def connection():
@@ -117,7 +125,7 @@ def connection():
                 connState = 'connected'
         except Exception as e:
             connState = str(e)
-            time.sleep(5)
+            time.sleep(1)
             server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
 def getConnState():
@@ -132,3 +140,13 @@ def getvidConn():
     except:
         return 'disconnected'
     
+
+
+def checkRecv():
+    while(True):
+        time.sleep(0.1)
+        if(mode == 'check'):
+            try:
+                msg = server.recv(1024)
+            except Exception as e:
+                connState = str(e)
