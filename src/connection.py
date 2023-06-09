@@ -63,6 +63,7 @@ def receivendplay():
     global connState
     #fps = float(sock.recv(4096).decode('ascii'))
     try:
+        fps = float(server.recv(1024).decode('ascii'))
         secondPart = server.recv(1024).decode('ascii')
         capture =  cv.VideoCapture(f"http://{host}:{secondPart}/stream.mjpg")
     except:
@@ -75,7 +76,7 @@ def receivendplay():
         try:
             _, frame = capture.read()
             cv.imshow('stream', frame)
-            if cv.waitKey(1)==ord("q"):
+            if cv.waitKey(int(1000/fps))==ord("q"):
                 server.send('stop'.encode('ascii'))
                 break 
         except Exception as e:
@@ -111,6 +112,7 @@ def connection():
     global alarmTab
     server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     while(True):
+        time.sleep(1)
         try:
             if(connState != 'connected'):
                 server.connect((host, 9999))

@@ -102,6 +102,7 @@ def request(location, startTime, endTime):
     global connState
     global table
     try:
+        #server.timeout(5)
         server.send(f'request&{location}&{startTime}&{endTime}'.encode('ascii'))
         arr = server.recv(4096)
         table = pickle.loads(arr)
