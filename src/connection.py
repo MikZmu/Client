@@ -63,7 +63,12 @@ def receivendplay():
     global connState
     #fps = float(sock.recv(4096).decode('ascii'))
     try:
-        fps = float(server.recv(1024).decode('ascii'))
+        msg = server.recv(1024).decode('ascii')
+        if(msg == 'stop'):
+            return 0
+        else:    
+            fps = float(msg)
+        
         secondPart = server.recv(1024).decode('ascii')
         capture =  cv.VideoCapture(f"http://{host}:{secondPart}/stream.mjpg")
     except:
@@ -73,6 +78,8 @@ def receivendplay():
 
 
     while(True):
+        if(msg == 'stop'):
+            break
         try:
             _, frame = capture.read()
             cv.imshow('stream', frame)

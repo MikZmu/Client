@@ -7,8 +7,10 @@ import base64
 import queue
 import numpy as np
 import connection
+global page
+page = 0
 global host
-
+global result
 global state
 global server
 global video
@@ -45,6 +47,7 @@ def clear():
         clear()
 
 def interface():
+    global result
     while(True):
         update.wait()
         clear()
@@ -59,10 +62,11 @@ def interface():
             print("StartTime to set start time **** EndTime to set end time **** Location to set location **** Play to play video")
             result = connection.request(location, startTime, endTime)
             try:
-                for row in result:
-                    print("ID: "+str(row[0])+" Location: "+ row[1]+ " Time: " + row[2])
+                for x in range(page * 10, ((page +1)  * 10)):
+                    print("ID: "+str(result[x][0])+" Location: "+ result[x][1]+ " Time: " + result[x][2])
             except Exception as e:
                 print(f"There was a problem with displaying data. Exception {e}")
+            print("Page: " + str(page+1) + " out of " + str(int(len(result)/10+1)))
             print("Command: ")
         update.clear()
 
@@ -72,6 +76,8 @@ def handle(command):
     global startTime
     global endTime
     global location
+    global result
+    global page
     if(state == 'connection menu'):
         if(command=='1'):
             connection.connectionDirection()
@@ -85,13 +91,13 @@ def handle(command):
         if(connState == 'connected'):
             if(command == '1'):
                 connection.connectionDirection()
-            if(command =='2'):
+            elif(command =='2'):
                 connection.connection()
-            if(command == '3'):
+            elif(command == '3'):
                 state == 'connection menu'
-            if(command =='4'):
+            elif(command =='4'):
                 print("XOXO")
-            if(command == 'StartTime'):
+            elif(command == 'StartTime'):
                 print("YYYY-MM-DD HH:MM:SS : ")
                 startYear = input('year ')
                 startMonth = input('month ')
@@ -100,7 +106,7 @@ def handle(command):
                 startMinute = input('minute ')
                 startSecond = input('second ')
                 startTime = startYear+'-'+startMonth+'-'+startDay+" "+startHour+":"+startMinute+":"+startSecond
-            if(command == 'EndTime'):
+            elif(command == 'EndTime'):
                 print("YYYY-MM-DD HH:MM:SS : ")
                 endYear = input('year ')
                 endMonth = input('month ')
@@ -109,11 +115,17 @@ def handle(command):
                 endMinute = input('minute ')
                 endSecond = input('second ')
                 endTime = endYear+'-'+endMonth+'-'+endDay+" "+endHour+":"+endMinute+":"+endSecond
-            if(command == 'location'):
+            elif(command == 'location'):
                 location = input("location: ")
-            if(command =='play'):
+            elif(command =='play'):
                 id = input('ID: ')
                 connection.rcvStr(id)
+            elif(command == 'next'):
+                if(page < int(len(result)/10)):
+                  page += 1
+            elif(command == 'prev'):
+                if(page > 0):
+                  page -= 1
         if(connState == 'disconnected'):
             state = 'connection menu'
 
