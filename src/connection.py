@@ -109,13 +109,12 @@ def connection():
     global sock
     global connState
     global vidConn
-    global alarmTab
     server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     while(True):
         time.sleep(1)
         try:
             if(connState != 'connected'):
-                server.connect((host, 9999))
+                server.connect((host, 9999))                                                    
                 connState = 'connected'
         except Exception as e:
             connState = str(e)

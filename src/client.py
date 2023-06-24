@@ -68,12 +68,10 @@ def interface():
 
 def handle(command):
     global connState
-    global vidConn
     global state
     global startTime
     global endTime
     global location
-    global result
     if(state == 'connection menu'):
         if(command=='1'):
             connection.connectionDirection()
@@ -95,9 +93,22 @@ def handle(command):
                 print("XOXO")
             if(command == 'StartTime'):
                 print("YYYY-MM-DD HH:MM:SS : ")
-                startTime = input()
+                startYear = input('year ')
+                startMonth = input('month ')
+                startDay = input('day ')
+                startHour = input('hour ')
+                startMinute = input('minute ')
+                startSecond = input('second ')
+                startTime = startYear+'-'+startMonth+'-'+startDay+" "+startHour+":"+startMinute+":"+startSecond
             if(command == 'EndTime'):
-                endTime = input("YYYY-MM-DD HH:MM:SS : ")
+                print("YYYY-MM-DD HH:MM:SS : ")
+                endYear = input('year ')
+                endMonth = input('month ')
+                endDay = input('day ')
+                endHour = input('hour ')
+                endMinute = input('minute ')
+                endSecond = input('second ')
+                endTime = endYear+'-'+endMonth+'-'+endDay+" "+endHour+":"+endMinute+":"+endSecond
             if(command == 'location'):
                 location = input("location: ")
             if(command =='play'):
@@ -125,7 +136,7 @@ def getState():
         if(newConnState != connState):
             connState = newConnState
             update.set()
-        time.sleep(0.1)
+        time.sleep(0.5)
 
 isLinux()
 update = threading.Event()
@@ -140,3 +151,5 @@ connThd.start()
 stateThd = threading.Thread(target=getState)
 stateThd.start()
 commThd.start()
+
+
