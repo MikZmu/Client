@@ -3,22 +3,12 @@ import pickle
 import cv2 as cv
 import time
 import os
-import threading
-import base64
 import numpy as np
 import queue
-global q
-q = queue.Queue(maxsize=200)
-global buffer
-buffer = 999999999
-global toggle
-toggle = False
 global host
 host = socket.gethostbyname(socket.gethostname())
 global connState
-global vidConn
 connState = 'disconnected'
-vidConn = 'disconnected'
 
 def connectionDirection():
     global host
@@ -50,7 +40,7 @@ def isLinux():
 
 def rcvStr(id):
     global connState
-    global fps
+
     try:
         server.send(f'play&{id}'.encode('ascii'))
     except Exception as e:
@@ -61,11 +51,10 @@ def receivendplay():
 
 
     global connState
-    #fps = float(sock.recv(4096).decode('ascii'))
     try:
         msg = server.recv(1024).decode('ascii')
         if(msg == 'stop'):
-            return 0
+            return 0                            
         else:    
             fps = float(msg)
         
@@ -73,8 +62,6 @@ def receivendplay():
         capture =  cv.VideoCapture(f"http://{host}:{secondPart}/stream.mjpg")
     except:
         connState = 'disconnected'
-    #fpsInt = int(fps)
-    #keyy = int((1/fpsInt) * 1000)
 
 
     while(True):

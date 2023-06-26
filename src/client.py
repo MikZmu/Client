@@ -1,26 +1,17 @@
-import socket
 import time
-import pickle
 import threading
 import cv2 as cv
-import base64
-import queue
 import numpy as np
 import connection
+import os
 global page
 page = 0
-global host
 global result
 global state
-global server
-global video
 state = "connection menu"
 global linuxMode
 global connState
 connState = 'disconnected'
-import os
-toggle = False
-stream = False
 global table
 global startTime
 startTime = '1900-01-01 00:00:00'
@@ -135,11 +126,6 @@ def command():
         if(command != ""):
             handle(command)
             update.set()
-
-
-
-
-
      
 def getState():
     global connState
@@ -154,8 +140,6 @@ isLinux()
 update = threading.Event()
 commThd = threading.Thread(target=command)
 dispThd = threading.Thread(target=interface)
-#checkThd = threading.Thread(target=connection.checkRecv)
-#checkThd.start()
 dispThd.start()
 connection.isLinux()
 connThd = threading.Thread(target=connection.connection)
